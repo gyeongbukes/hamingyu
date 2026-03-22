@@ -36,30 +36,32 @@
   <script type="text/babel">
     const { useState, useEffect, useRef } = React;
 
+    const DB_URL = "https://sungjang2025-30160-default-rtdb.asia-southeast1.firebasedatabase.app";
+    
     const getImg = (num, ext = 'jpg') => {
       const bucket = "sungjang2025-30160.firebasestorage.app";
       const path = encodeURIComponent(`개인/${num}.${ext}`);
       return `https://firebasestorage.googleapis.com/v0/b/${bucket}/o/${path}?alt=media`;
     };
 
+    // Firebase Storage에 있는 mp3 파일의 직접 재생 가능한 HTTPS 주소
+    const AUDIO_SRC = "https://firebasestorage.googleapis.com/v0/b/sungjang2025-30160.firebasestorage.app/o/%EA%B0%9C%EC%9D%B8%2Fantifreez.mp3?alt=media";
+
     const GALLERY_IMAGES = Array.from({ length: 30 }, (_, i) => getImg(i + 1));
     const WEDDING_DATE = new Date("2026-06-27T13:00:00");
     const P = { bg: "#FAFAFA", white: "#FFFFFF", black: "#262626", gray: "#8E8E8E", lightGray: "#DBDBDB", blue: "#0095F6", pink: "#ED4956", border: "#EFEFEF" };
 
-    /* 스크래치 카드 */
-    function ScratchCard() {
+    /* 모바일 친화적인 B컷 잠금해제 (터치 시 블러 해제) */
+    function BCutReveal() {
+      const [revealed, setRevealed] = useState(false);
       return (
-        <div style={{ position: "relative", width: "100%", aspectRatio: "3/4", background: P.lightGray, borderRadius: 8, overflow: "hidden", marginTop: 10 }}>
-          <img src={getImg('a')} alt="B컷" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-          <div style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", display: "grid", gridTemplateColumns: "repeat(10, 1fr)", gridTemplateRows: "repeat(10, 1fr)" }}>
-            {Array.from({ length: 100 }).map((_, i) => (
-              <div key={i} onPointerEnter={(e) => { e.target.style.opacity = 0; }} onTouchMove={(e) => { e.target.style.opacity = 0; }}
-                   style={{ background: "#BDBDBD", transition: "opacity 0.2s ease", cursor: "pointer", border: "0.5px solid #AFAFAF" }} />
-            ))}
-          </div>
-          <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", pointerEvents: "none", color: "#555", fontWeight: "bold", fontSize: 16, textShadow: "0 0 5px #fff" }}>
-            손가락으로 긁어보세요!
-          </div>
+        <div onClick={() => setRevealed(true)} style={{ position: "relative", width: "100%", aspectRatio: "3/4", background: P.lightGray, borderRadius: 8, overflow: "hidden", marginTop: 10, cursor: "pointer" }}>
+          <img src={getImg('a')} alt="B컷" style={{ width: "100%", height: "100%", objectFit: "cover", filter: revealed ? "none" : "blur(20px)", transition: "filter 1.5s ease" }} />
+          {!revealed && (
+            <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.2)", color: "#fff", fontWeight: "bold", fontSize: 16, textShadow: "0 2px 4px rgba(0,0,0,0.5)", transition: "opacity 0.5s", opacity: revealed ? 0 : 1 }}>
+              👆 터치해서 진짜 모습 보기 🔓
+            </div>
+          )}
         </div>
       );
     }
@@ -69,7 +71,7 @@
       return (
         <div style={{ position: "fixed", inset: 0, zIndex: 2000, background: "rgba(0,0,0,0.85)", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", padding: 20, animation: "pop 0.3s ease" }}>
           <button onClick={onClose} style={{ position: "absolute", top: 20, right: 20, background: "none", border: "none", color: "white", fontSize: 30, cursor: "pointer" }}>✕</button>
-          <div style={{ background: P.white, width: "100%", maxWidth: 360, borderRadius: 16, padding: 24, boxSizing: "border-box", textAlign: "center", position: "relative" }}>
+          <div style={{ background: P.white, width: "100%", maxWidth: 360, borderRadius: 16, padding: 24, boxSizing: "border-box", textAlign: "center", position: "relative", maxHeight: "80vh", overflowY: "auto" }}>
             {title && <h3 style={{ margin: "0 0 20px", fontSize: 18, color: P.black }}>{title}</h3>}
             {children}
           </div>
@@ -77,30 +79,100 @@
       );
     }
 
-    /* 갤러리 라이트박스 (확대 보기) */
+    /* 갤러리 라이트박스 */
     function Lightbox({ images, initialIndex, onClose }) {
       const [currentIndex, setCurrentIndex] = useState(initialIndex);
-      const [liked, setLiked] = useState({});
-
-      const handleLike = () => {
-        setLiked(prev => ({ ...prev, [currentIndex]: !prev[currentIndex] }));
-      };
-
       return (
         <div style={{ position: "fixed", inset: 0, zIndex: 3000, background: "rgba(0,0,0,0.95)", display: "flex", flexDirection: "column", justifyContent: "center" }}>
           <div style={{ position: "absolute", top: 20, right: 20, color: "white", fontSize: 30, cursor: "pointer", zIndex: 3010 }} onClick={onClose}>✕</div>
           <div style={{ position: "relative", width: "100%", height: "70vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            {currentIndex > 0 && <div onClick={() => setCurrentIndex(currentIndex - 1)} style={{ position: "absolute", left: 10, color: "white", fontSize: 40, cursor: "pointer" }}>‹</div>}
+            {currentIndex > 0 && <div onClick={() => setCurrentIndex(currentIndex - 1)} style={{ position: "absolute", left: 10, color: "white", fontSize: 40, cursor: "pointer", padding: 20 }}>‹</div>}
             <img src={images[currentIndex]} style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }} />
-            {currentIndex < images.length - 1 && <div onClick={() => setCurrentIndex(currentIndex + 1)} style={{ position: "absolute", right: 10, color: "white", fontSize: 40, cursor: "pointer" }}>›</div>}
+            {currentIndex < images.length - 1 && <div onClick={() => setCurrentIndex(currentIndex + 1)} style={{ position: "absolute", right: 10, color: "white", fontSize: 40, cursor: "pointer", padding: 20 }}>›</div>}
           </div>
-          <div style={{ padding: "20px", display: "flex", justifyContent: "center", alignItems: "center", gap: 15 }}>
-            <span onClick={handleLike} style={{ fontSize: 32, cursor: "pointer" }}>
-              {liked[currentIndex] ? "❤️" : "🤍"}
-            </span>
+          <div style={{ padding: "20px", display: "flex", justifyContent: "center", alignItems: "center" }}>
             <span style={{ color: "white", fontSize: 14 }}>{currentIndex + 1} / {images.length}</span>
           </div>
         </div>
+      );
+    }
+
+    /* TMI 모의고사 컴포넌트 */
+    const QUIZ_DATA = [
+      { q: "두 사람이 처음 만난 장소는?", options: ["대학교 도서관", "친구의 소개팅", "퇴근길 헬스장"], a: 1 },
+      { q: "신랑이 신부에게 처음 반한 순간은?", options: ["밥을 너무 맛있게 먹어서", "일하는 모습이 멋져서", "환하게 웃을 때"], a: 2 },
+      { q: "두 사람이 가장 좋아하는 데이트는?", options: ["심야 영화 보기", "맛집 투어", "방구석 넷플릭스"], a: 1 },
+      { q: "싸웠을 때 먼저 화해의 손길을 내미는 사람은?", options: ["항상 신랑", "항상 신부", "그때그때 다름"], a: 0 },
+      { q: "신혼여행지는 어디일까요?", options: ["하와이", "발리", "유럽"], a: 2 }
+    ];
+
+    function QuizModal({ onClose }) {
+      const [step, setStep] = useState(0);
+      const [score, setScore] = useState(0);
+      const [status, setStatus] = useState(null); // 'correct', 'wrong', null
+      const [confetti, setConfetti] = useState(false);
+
+      const handleAnswer = (index) => {
+        if (status !== null) return; // 이미 선택한 경우 무시
+        if (index === QUIZ_DATA[step].a) {
+          setStatus('correct');
+          setScore(s => s + 1);
+          setConfetti(true);
+        } else {
+          setStatus('wrong');
+        }
+
+        setTimeout(() => {
+          setStatus(null);
+          setConfetti(false);
+          setStep(s => s + 1);
+        }, 1500);
+      };
+
+      if (step >= QUIZ_DATA.length) {
+        return (
+          <StoryModal title="💯 TMI 모의고사 결과" onClose={onClose}>
+            <div style={{ fontSize: 40, margin: "20px 0" }}>{score * 20}점!</div>
+            <p style={{ fontSize: 14, lineHeight: 1.5 }}>
+              {score === 5 ? "완벽해요! 저희를 정말 잘 아시네요 🥰" : 
+               score >= 3 ? "오~ 꽤 눈썰미가 좋으신데요? 😎" : 
+               "앞으로 더 많이 알아가요 우리! 😆"}
+            </p>
+            <button onClick={onClose} style={{ marginTop: 20, padding: "10px 20px", background: P.blue, color: "white", border: "none", borderRadius: 8, fontWeight: "bold" }}>확인</button>
+          </StoryModal>
+        );
+      }
+
+      const q = QUIZ_DATA[step];
+      return (
+        <StoryModal title={`💯 모의고사 (${step + 1}/${QUIZ_DATA.length})`} onClose={onClose}>
+          {confetti && <div style={{ position: "fixed", inset: 0, fontSize: 30, pointerEvents: "none", animation: "confettiFall 2s linear", zIndex: 9999 }}>🎉🎊🌸</div>}
+          <div className={status === 'wrong' ? 'shake' : ''}>
+            <p style={{ fontSize: 15, marginBottom: 20, lineHeight: 1.4, fontWeight: 600 }}>Q. {q.q}</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {q.options.map((opt, i) => {
+                let bg = P.white;
+                let color = P.black;
+                let border = P.border;
+                let opacity = 1;
+                if (status !== null) {
+                  if (i === q.a) { bg = "#e6f4ea"; color = "#137333"; border = "#137333"; } // 정답 강조
+                  else if (status === 'wrong' && i !== q.a) { opacity = 0.5; } // 오답 흐리게
+                }
+                return (
+                  <button key={i} onClick={() => handleAnswer(i)} 
+                          style={{ padding: "14px", borderRadius: 8, border: `1px solid ${border}`, background: bg, color: color, fontSize: 14, transition: "all 0.2s", opacity: opacity }}>
+                    {i + 1}. {opt}
+                  </button>
+                );
+              })}
+            </div>
+            <div style={{ height: 30, marginTop: 12 }}>
+              {status === 'wrong' && <p style={{ color: "red", fontSize: 14, fontWeight: "bold", margin: 0, animation: "pop 0.3s" }}>땡! 다시 생각해보세요 🤣</p>}
+              {status === 'correct' && <p style={{ color: "#137333", fontSize: 14, fontWeight: "bold", margin: 0, animation: "pop 0.3s" }}>정답입니다! 🎉</p>}
+            </div>
+          </div>
+        </StoryModal>
       );
     }
 
@@ -116,14 +188,36 @@
       const [mainLiked, setMainLiked] = useState(false);
       const [hearts, setHearts] = useState([]);
 
-      const [voted, setVoted] = useState(false);
-      const [votes, setVotes] = useState({ 1: 52, 2: 18, 3: 30 });
-      const [quizState, setQuizState] = useState(null);
-      const [confetti, setConfetti] = useState(false);
-
+      // Firebase 관련 상태
+      const [polls, setPolls] = useState({
+        poll1: { title: "결혼식 당일, 누가 먼저 울까요?", opts: ["눈물 많은 신부", "은근 여린 신랑", "양가 부모님"], votes: [0, 0, 0], voted: false },
+        poll2: { title: "두 사람의 2세는 누구를 닮았으면?", opts: ["아빠 닮은 딸", "엄마 닮은 아들", "반반 무많이"], votes: [0, 0, 0], voted: false }
+      });
       const [entries, setEntries] = useState([]);
       const [guestName, setGuestName] = useState("");
       const [guestMsg, setGuestMsg] = useState("");
+
+      // Firebase에서 데이터 불러오기
+      useEffect(() => {
+        // 투표 데이터 불러오기
+        fetch(`${DB_URL}/polls.json`).then(r => r.json()).then(data => {
+          if (data) {
+            setPolls(prev => ({
+              poll1: { ...prev.poll1, votes: data.poll1 || [0, 0, 0] },
+              poll2: { ...prev.poll2, votes: data.poll2 || [0, 0, 0] }
+            }));
+          }
+        }).catch(() => {});
+
+        // 방명록 불러오기
+        fetch(`${DB_URL}/guestbook.json`).then(r => r.json()).then(data => {
+          if (data) {
+            const loadedEntries = Object.keys(data).map(key => ({ id: key, ...data[key] }));
+            loadedEntries.sort((a, b) => b.timestamp - a.timestamp); // 최신순
+            setEntries(loadedEntries);
+          }
+        }).catch(() => {});
+      }, []);
 
       const enter = () => { setEntered(true); setPlaying(true); };
       const toggleExpand = (key) => setExpanded({ ...expanded, [key]: !expanded[key] });
@@ -132,15 +226,59 @@
         if (audioRef.current) { playing ? audioRef.current.play().catch(()=>{}) : audioRef.current.pause(); }
       }, [playing]);
 
-      useEffect(() => {
-        try { const saved = localStorage.getItem("guestbook"); if (saved) setEntries(JSON.parse(saved)); } catch (e) {}
-      }, []);
+      // 하객 투표 처리
+      const handleVote = (pollKey, optIndex) => {
+        if (polls[pollKey].voted) return;
 
-      const submitGuestbook = () => {
+        const newVotes = [...polls[pollKey].votes];
+        newVotes[optIndex] += 1;
+
+        setPolls(prev => ({
+          ...prev, [pollKey]: { ...prev[pollKey], votes: newVotes, voted: true }
+        }));
+
+        // Firebase에 PATCH로 투표수 업데이트
+        fetch(`${DB_URL}/polls.json`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ [pollKey]: newVotes })
+        });
+      };
+
+      // 사용자 IP 가져오기 및 마스킹
+      const fetchMaskedIp = async () => {
+        try {
+          const res = await fetch('https://api.ipify.org?format=json');
+          const data = await res.json();
+          const parts = data.ip.split('.');
+          return `${parts[0]}.${parts[1]}.***.***`;
+        } catch(e) {
+          return null;
+        }
+      };
+
+      // 방명록 등록
+      const submitGuestbook = async () => {
         if (!guestName.trim() || !guestMsg.trim()) return;
-        const newEntries = [{ id: Date.now(), name: guestName, msg: guestMsg, date: new Date().toLocaleDateString() }, ...entries];
-        setEntries(newEntries);
-        try { localStorage.setItem("guestbook", JSON.stringify(newEntries)); } catch (e) {}
+        
+        const ip = await fetchMaskedIp();
+        const newEntry = {
+          name: guestName,
+          msg: guestMsg,
+          date: new Date().toLocaleDateString(),
+          ip: ip,
+          timestamp: Date.now()
+        };
+
+        // Firebase에 POST
+        fetch(`${DB_URL}/guestbook.json`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newEntry)
+        }).then(r => r.json()).then(data => {
+          setEntries([{ id: data.name, ...newEntry }, ...entries]);
+        });
+
         setGuestName(""); setGuestMsg("");
       };
 
@@ -170,11 +308,11 @@
       return (
         <div style={{ maxWidth: 480, margin: "0 auto", minHeight: "100vh", position: "relative", paddingBottom: 60 }}>
           
-          <button onClick={() => setPlaying(!playing)} style={{ position: "fixed", top: 12, right: 12, zIndex: 900, width: 36, height: 36, borderRadius: "50%", border: `1px solid ${P.lightGray}`, background: "rgba(255,255,255,0.9)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", animation: playing ? "spin 4s linear infinite" : "none" }}>♫</button>
-          <audio ref={audioRef} loop preload="auto"><source src="" type="audio/mpeg" /></audio>
+          <button onClick={() => setPlaying(!playing)} style={{ position: "fixed", top: 12, right: 12, zIndex: 900, width: 36, height: 36, borderRadius: "50%", border: `1px solid ${P.lightGray}`, background: "rgba(255,255,255,0.9)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", animation: playing ? "spin 4s linear infinite" : "none" }}>{playing ? '🔊' : '🔈'}</button>
+          <audio ref={audioRef} loop preload="auto" src={AUDIO_SRC}></audio>
 
           {/* 인스타 프로필 헤더 */}
-          <div style={{ display: "flex", alignItems: "center", padding: "20px 16px", background: P.white, borderBottom: `1px solid ${P.border}` }}>
+          <div style={{ display: "flex", alignItems: "center", padding: "20px 166px", background: P.white, borderBottom: `1px solid ${P.border}` }}>
             <div style={{ width: 76, height: 76, borderRadius: "50%", padding: 3, background: `linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)` }}>
               <img src={getImg(16)} style={{ width: "100%", height: "100%", borderRadius: "50%", border: "2px solid white", objectFit: "cover" }} />
             </div>
@@ -236,14 +374,13 @@
           {/* 아코디언 메뉴들 */}
           <div style={{ padding: "16px", display: "flex", flexDirection: "column", gap: 10 }}>
             
-            {/* 혼주 (가족 관계) 세련된 디자인 아코디언 */}
+            {/* 혼주 (가족 관계) */}
             <div style={{ background: P.white, border: `1px solid ${P.border}`, borderRadius: 8, overflow: "hidden" }}>
               <div onClick={() => toggleExpand('parents')} style={{ padding: "16px", fontSize: 14, fontWeight: 600, display: "flex", justifyContent: "space-between", cursor: "pointer" }}>
                 👨‍👩‍👧‍👦 혼주 안내 <span>{expanded['parents'] ? '▲' : '▼'}</span>
               </div>
               {expanded['parents'] && (
                 <div style={{ padding: "24px 16px", borderTop: `1px solid ${P.bg}`, textAlign: "center", background: P.white }}>
-                  {/* 신랑 측 */}
                   <div style={{ marginBottom: 24 }}>
                     <span style={{ fontSize: 12, color: P.pink, fontWeight: 600, letterSpacing: 2, display: "block", marginBottom: 8 }}>GROOM</span>
                     <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 12, fontSize: 16 }}>
@@ -252,9 +389,7 @@
                       <span style={{ fontWeight: 600, fontSize: 18, color: P.black }}>석민규</span>
                     </div>
                   </div>
-                  {/* 중앙 선 */}
                   <div style={{ width: 40, height: 1, background: P.lightGray, margin: "0 auto 24px" }} />
-                  {/* 신부 측 */}
                   <div>
                     <span style={{ fontSize: 12, color: P.pink, fontWeight: 600, letterSpacing: 2, display: "block", marginBottom: 8 }}>BRIDE</span>
                     <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 12, fontSize: 16 }}>
@@ -267,16 +402,15 @@
               )}
             </div>
 
-            {/* 우리의 이야기 (카카오톡 감성) */}
+            {/* 우리의 이야기 */}
             <div style={{ background: P.white, border: `1px solid ${P.border}`, borderRadius: 8, overflow: "hidden" }}>
               <div onClick={() => toggleExpand('story')} style={{ padding: "16px", fontSize: 14, fontWeight: 600, display: "flex", justifyContent: "space-between", cursor: "pointer" }}>
                 💬 우리의 이야기 <span>{expanded['story'] ? '▲' : '▼'}</span>
               </div>
               {expanded['story'] && (
-                <div style={{ padding: "16px", borderTop: `1px solid ${P.bg}`, background: "#b2c7d9" }}> {/* 카톡 배경색 */}
+                <div style={{ padding: "16px", borderTop: `1px solid ${P.bg}`, background: "#b2c7d9" }}> 
                   <div style={{ textAlign: "center", fontSize: 11, color: "#fff", background: "rgba(0,0,0,0.2)", borderRadius: 12, padding: "4px 12px", margin: "0 auto 16px", width: "fit-content" }}>2024년 벚꽃 피던 날</div>
                   
-                  {/* 상대방(하민) */}
                   <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
                     <div style={{ width: 36, height: 36, borderRadius: "14px", background: `url(${getImg(16)}) center/cover` }} />
                     <div>
@@ -287,14 +421,12 @@
                     </div>
                   </div>
 
-                  {/* 나(민규) */}
                   <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}>
                     <div style={{ background: "#fee500", padding: "8px 12px", borderRadius: "12px 0 12px 12px", fontSize: 13, color: "#000", maxWidth: 220, lineHeight: 1.4, boxShadow: "0 1px 2px rgba(0,0,0,0.1)" }}>
                       응 하민아! 나도 진짜 즐거웠어. 사실 오늘 하고 싶은 말이 있었는데...
                     </div>
                   </div>
 
-                  {/* 상대방(하민) */}
                   <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
                     <div style={{ width: 36, height: 36, borderRadius: "14px", background: `url(${getImg(16)}) center/cover` }} />
                     <div>
@@ -305,7 +437,6 @@
                     </div>
                   </div>
 
-                   {/* 나(민규) */}
                    <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}>
                     <div style={{ background: "#fee500", padding: "8px 12px", borderRadius: "12px 0 12px 12px", fontSize: 13, color: "#000", maxWidth: 220, lineHeight: 1.4, boxShadow: "0 1px 2px rgba(0,0,0,0.1)" }}>
                       우리 내일도, 모레도, 앞으로도 계속 같이 영화 볼래? 나랑 만나자!
@@ -314,7 +445,6 @@
 
                   <div style={{ textAlign: "center", fontSize: 11, color: "#fff", background: "rgba(0,0,0,0.2)", borderRadius: 12, padding: "4px 12px", margin: "24px auto 16px", width: "fit-content" }}>2026년 6월 27일</div>
 
-                  {/* 시스템 텍스트 */}
                    <div style={{ display: "flex", justifyContent: "center", marginBottom: 4 }}>
                     <div style={{ background: "rgba(0,0,0,0.15)", padding: "6px 14px", borderRadius: "16px", fontSize: 12, color: "#fff" }}>
                       석민규 님과 김하민 님이 평생을 함께하기로 했습니다. 🎉
@@ -324,7 +454,7 @@
               )}
             </div>
 
-            {/* 사진첩 아코디언 */}
+            {/* 사진첩 */}
             <div style={{ background: P.white, border: `1px solid ${P.border}`, borderRadius: 8, overflow: "hidden" }}>
               <div onClick={() => toggleExpand('gallery')} style={{ padding: "16px", fontSize: 14, fontWeight: 600, display: "flex", justifyContent: "space-between", cursor: "pointer" }}>
                 📸 사진첩 보기 (30장) <span>{expanded['gallery'] ? '▲' : '▼'}</span>
@@ -338,7 +468,7 @@
               )}
             </div>
 
-            {/* 오시는 길 아코디언 */}
+            {/* 오시는 길 */}
             <div style={{ background: P.white, border: `1px solid ${P.border}`, borderRadius: 8, overflow: "hidden" }}>
               <div onClick={() => toggleExpand('location')} style={{ padding: "16px", fontSize: 14, fontWeight: 600, display: "flex", justifyContent: "space-between", cursor: "pointer" }}>
                 📍 오시는 길 <span>{expanded['location'] ? '▲' : '▼'}</span>
@@ -347,15 +477,15 @@
                 <div style={{ padding: "16px", borderTop: `1px solid ${P.bg}`, fontSize: 13, textAlign: "center" }}>
                   <p style={{ fontWeight: 600, fontSize: 15, margin: "0 0 5px" }}>더누벨 포항</p>
                   <p style={{ margin: "0 0 16px", color: P.gray }}>경북 포항시 남구 새천년대로 483</p>
-                  <div style={{ background: P.bg, height: 150, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 8, marginBottom: 16, color: P.gray }}>지도 API 연동 영역</div>
+                  <img src={getImg('지도')} alt="지도" style={{ width: "100%", height: "auto", borderRadius: 8, marginBottom: 16 }} />
                 </div>
               )}
             </div>
 
-            {/* 마음 전하실 곳 아코디언 */}
+            {/* 마음 전하실 곳 */}
             <div style={{ background: P.white, border: `1px solid ${P.border}`, borderRadius: 8, overflow: "hidden" }}>
               <div onClick={() => toggleExpand('account')} style={{ padding: "16px", fontSize: 14, fontWeight: 600, display: "flex", justifyContent: "space-between", cursor: "pointer" }}>
-                💌 마음 전하실 곳 <span>{expanded['account'] ? '▲' : '▼'}</span>
+                💝 마음 전하실 곳 <span>{expanded['account'] ? '▲' : '▼'}</span>
               </div>
               {expanded['account'] && (
                 <div style={{ padding: "16px", borderTop: `1px solid ${P.bg}`, fontSize: 13 }}>
@@ -371,10 +501,10 @@
               )}
             </div>
             
-            {/* 참석 여부 (RSVP) */}
+            {/* 참석 여부 */}
             <div style={{ background: P.white, border: `1px solid ${P.border}`, borderRadius: 8, overflow: "hidden" }}>
               <div onClick={() => toggleExpand('rsvp')} style={{ padding: "16px", fontSize: 14, fontWeight: 600, display: "flex", justifyContent: "space-between", cursor: "pointer" }}>
-                💌 참석 여부 전달하기 <span>{expanded['rsvp'] ? '▲' : '▼'}</span>
+                📝 참석 여부 전달하기 <span>{expanded['rsvp'] ? '▲' : '▼'}</span>
               </div>
               {expanded['rsvp'] && (
                 <div style={{ padding: "16px", borderTop: `1px solid ${P.bg}`, fontSize: 13 }}>
@@ -388,7 +518,7 @@
             </div>
           </div>
 
-          {/* 방명록 (인스타 댓글 스타일) */}
+          {/* 방명록 (Firebase 연동 + IP 표시) */}
           <div style={{ padding: "16px", background: P.white, marginTop: 10, borderTop: `1px solid ${P.border}` }}>
             <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 16 }}>댓글 {entries.length}개</div>
             
@@ -396,13 +526,17 @@
               {entries.map(e => (
                 <div key={e.id} style={{ display: "flex", gap: 10 }}>
                   <div style={{ width: 30, height: 30, borderRadius: "50%", background: P.bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12 }}>👤</div>
-                  <div>
-                    <span style={{ fontSize: 13, fontWeight: 600, marginRight: 8 }}>{e.name}</span>
-                    <span style={{ fontSize: 13 }}>{e.msg}</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
+                      <span style={{ fontSize: 13, fontWeight: 600 }}>{e.name}</span>
+                      {e.ip && <span style={{ fontSize: 10, color: P.lightGray }}>({e.ip})</span>}
+                    </div>
+                    <div style={{ fontSize: 13, marginTop: 2 }}>{e.msg}</div>
                     <div style={{ fontSize: 11, color: P.gray, marginTop: 4 }}>{e.date}</div>
                   </div>
                 </div>
               ))}
+              {entries.length === 0 && <div style={{ fontSize: 13, color: P.gray, textAlign: "center", padding: "20px 0" }}>첫 번째 축하 댓글을 남겨주세요!</div>}
             </div>
 
             {/* 댓글 입력창 */}
@@ -416,45 +550,38 @@
           {/* 팝업 모달창들 */}
           {modal === 'poll' && (
             <StoryModal title="📊 하객 투표소" onClose={() => setModal(null)}>
-              <p style={{ fontSize: 14, marginBottom: 20 }}>Q. 결혼식 당일, 누가 먼저 울까요?</p>
-              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                {[{id: 1, label: "눈물 많은 신부"}, {id: 2, label: "은근 여린 신랑"}, {id: 3, label: "양가 부모님"}].map(opt => {
-                  const total = Object.values(votes).reduce((a, b) => a + b, 0);
-                  const percent = Math.round((votes[opt.id] / total) * 100);
-                  return (
-                    <div key={opt.id} onClick={() => { if(!voted){ setVotes({...votes, [opt.id]: votes[opt.id]+1}); setVoted(true); } }} style={{ background: P.bg, border: `1px solid ${P.border}`, borderRadius: 8, padding: "12px", position: "relative", cursor: "pointer", overflow: "hidden" }}>
-                      {voted && <div style={{ position: "absolute", top: 0, left: 0, height: "100%", width: `${percent}%`, background: P.pink, opacity: 0.15, transition: "width 0.5s ease" }} />}
-                      <div style={{ position: "relative", display: "flex", justifyContent: "space-between", fontSize: 13, fontWeight: 500 }}>
-                        <span>{opt.label}</span>
-                        {voted && <span style={{ color: P.pink }}>{percent}%</span>}
-                      </div>
+              {Object.keys(polls).map((key, index) => {
+                const poll = polls[key];
+                const total = poll.votes.reduce((a, b) => a + b, 0);
+                
+                return (
+                  <div key={key} style={{ marginBottom: index === 0 ? 30 : 0, textAlign: "left" }}>
+                    <p style={{ fontSize: 14, fontWeight: 600, marginBottom: 12 }}>Q{index + 1}. {poll.title}</p>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                      {poll.opts.map((opt, i) => {
+                        const percent = total > 0 ? Math.round((poll.votes[i] / total) * 100) : 0;
+                        return (
+                          <div key={i} onClick={() => handleVote(key, i)} style={{ background: P.bg, border: `1px solid ${P.border}`, borderRadius: 8, padding: "12px", position: "relative", cursor: "pointer", overflow: "hidden" }}>
+                            {poll.voted && <div style={{ position: "absolute", top: 0, left: 0, height: "100%", width: `${percent}%`, background: P.pink, opacity: 0.15, transition: "width 0.5s ease" }} />}
+                            <div style={{ position: "relative", display: "flex", justifyContent: "space-between", fontSize: 13, fontWeight: 500 }}>
+                              <span>{opt}</span>
+                              {poll.voted && <span style={{ color: P.pink }}>{percent}% ({poll.votes[i]}명)</span>}
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
-                  );
-                })}
-              </div>
+                  </div>
+                );
+              })}
             </StoryModal>
           )}
 
-          {modal === 'quiz' && (
-            <StoryModal title="💯 TMI 모의고사" onClose={() => setModal(null)}>
-              {confetti && <div style={{ position: "fixed", inset: 0, fontSize: 30, pointerEvents: "none", animation: "confettiFall 2s linear", zIndex: 9999 }}>🎉🎊🌸🌷</div>}
-              <div className={quizState === 'wrong' ? 'shake' : ''}>
-                <p style={{ fontSize: 14, marginBottom: 20, lineHeight: 1.4 }}>Q. 두 사람이 처음 만난 장소는?</p>
-                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                  <button onClick={() => { setQuizState("wrong"); setTimeout(()=>setQuizState(null), 500); }} style={{ padding: "12px", borderRadius: 8, border: `1px solid ${P.border}`, background: P.white, fontSize: 13 }}>1. 대학교 도서관</button>
-                  <button onClick={() => { setQuizState("correct"); setConfetti(true); setTimeout(()=>setConfetti(false), 3000); }} style={{ padding: "12px", borderRadius: 8, border: `1px solid ${P.blue}`, background: P.white, color: P.blue, fontWeight: 600, fontSize: 13 }}>2. 친구의 소개팅</button>
-                  <button onClick={() => { setQuizState("wrong"); setTimeout(()=>setQuizState(null), 500); }} style={{ padding: "12px", borderRadius: 8, border: `1px solid ${P.border}`, background: P.white, fontSize: 13 }}>3. 퇴근길 헬스장</button>
-                </div>
-                {quizState === 'wrong' && <p style={{ color: "red", fontSize: 12, marginTop: 12 }}>땡! 다시 생각해보세요 ㅋㅋ</p>}
-                {quizState === 'correct' && <p style={{ color: P.blue, fontSize: 12, marginTop: 12, fontWeight: "bold" }}>정답입니다! 🎉</p>}
-              </div>
-            </StoryModal>
-          )}
+          {modal === 'quiz' && <QuizModal onClose={() => setModal(null)} />}
 
           {modal === 'bcut' && (
             <StoryModal title="🤫 우리의 진짜 모습" onClose={() => setModal(null)}>
-              <p style={{ fontSize: 13, color: P.gray, marginBottom: 10 }}>시크함은 잊어주세요. 회색 창을 긁어보세요!</p>
-              <ScratchCard />
+              <BCutReveal />
             </StoryModal>
           )}
 
@@ -466,7 +593,6 @@
             </StoryModal>
           )}
 
-          {/* 사진 확대 보기 (라이트박스) */}
           {lightboxIndex !== null && (
             <Lightbox images={GALLERY_IMAGES} initialIndex={lightboxIndex} onClose={() => setLightboxIndex(null)} />
           )}
