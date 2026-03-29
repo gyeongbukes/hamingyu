@@ -29,11 +29,6 @@
       position: absolute; animation: floatUp 1.2s ease-out forwards; pointer-events: none; font-size: 28px; z-index: 50;
     }
 
-    .gallery-thumb {
-      width: 100%; aspect-ratio: 1; background-size: cover; background-position: center; cursor: pointer; transition: opacity 0.2s;
-    }
-    .gallery-thumb:active { opacity: 0.7; }
-
     .main-photo-container {
       position: relative; width: 100%; overflow: hidden; background-color: #000;
     }
@@ -86,7 +81,6 @@
       );
     }
 
-    /* 🔥 완벽하게 수정된 모바일 핀치 줌 라이트박스 */
     function Lightbox({ images, initialIndex, onClose }) {
       const [currentIndex, setCurrentIndex] = useState(initialIndex);
       const imgRef = useRef(null);
@@ -97,7 +91,6 @@
       const [pointY, setPointY] = useState(0);
       const [start, setStart] = useState({ x: 0, y: 0 });
       
-      // 모바일 두 손가락 거리 계산용 상태
       const [pinchStartDist, setPinchStartDist] = useState(null);
       const [baseScale, setBaseScale] = useState(1);
 
@@ -105,18 +98,15 @@
         setScale(1); setPointX(0); setPointY(0);
       }, [currentIndex]);
 
-      // 두 터치 지점 사이의 거리를 구하는 함수
       const getDistance = (touches) => {
         return Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY);
       };
 
       const handleTouchStart = (e) => {
         if (e.touches.length === 2) { 
-          // 두 손가락 터치 (확대/축소 준비)
           setPinchStartDist(getDistance(e.touches));
           setBaseScale(scale);
         } else if (e.touches.length === 1 && scale > 1) { 
-          // 확대된 상태에서 한 손가락 터치 (이동 준비)
           setPanning(true);
           setStart({ x: e.touches[0].clientX - pointX, y: e.touches[0].clientY - pointY });
         }
@@ -124,15 +114,11 @@
 
       const handleTouchMove = (e) => {
         if (e.touches.length === 2 && pinchStartDist) { 
-          // 두 손가락으로 드래그 (확대/축소 실행)
           const dist = getDistance(e.touches);
-          // 원래 비율에서 늘어난 거리만큼 스케일업 (최대 4배, 최소 1배 제한)
           const newScale = Math.min(Math.max(1, baseScale * (dist / pinchStartDist)), 4);
           setScale(newScale);
-          // 축소해서 원본 크기가 되면 위치 중앙 초기화
           if (newScale === 1) { setPointX(0); setPointY(0); }
         } else if (e.touches.length === 1 && panning && scale > 1) { 
-          // 확대된 상태에서 한 손가락으로 드래그 (사진 이동)
           setPointX(e.touches[0].clientX - start.x);
           setPointY(e.touches[0].clientY - start.y);
         }
@@ -143,7 +129,6 @@
         setPinchStartDist(null);
       };
 
-      // 데스크탑 마우스 휠 확대 기능 (유지)
       const handleWheel = (e) => { 
         if(imgRef.current && e.ctrlKey) {
           e.preventDefault();
@@ -179,8 +164,8 @@
                  style={{ 
                    maxWidth: "100%", maxHeight: "100%", objectFit: "contain",
                    transform: `translate(${pointX}px, ${pointY}px) scale(${scale})`,
-                   transition: panning || pinchStartDist ? "none" : "transform 0.1s ease-out", // 드래그 중엔 즉시반응, 끝날땐 부드럽게
-                   touchAction: "none" // 네이티브 줌 방지
+                   transition: panning || pinchStartDist ? "none" : "transform 0.1s ease-out",
+                   touchAction: "none"
                  }} />
             
             {currentIndex < images.length - 1 && scale === 1 && <div onClick={() => setCurrentIndex(currentIndex + 1)} style={{ position: "absolute", right: 10, color: "white", fontSize: 40, cursor: "pointer", padding: 20, zIndex: 3005, touchAction: "manipulation" }}>›</div>}
@@ -423,23 +408,24 @@
           <button onClick={() => setPlaying(!playing)} style={{ position: "fixed", top: 12, right: 12, zIndex: 900, width: 36, height: 36, borderRadius: "50%", border: `1px solid ${P.lightGray}`, background: "rgba(255,255,255,0.9)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", animation: playing ? "spin 4s linear infinite" : "none", fontSize: 16 }}>♫</button>
           <audio ref={audioRef} loop preload="auto" src={AUDIO_SRC}></audio>
 
-          <div style={{ display: "flex", alignItems: "center", padding: "20px 16px", background: P.white, borderBottom: `1px solid ${P.border}` }}>
-            <div style={{ width: 76, height: 76, borderRadius: "50%", padding: 3, background: `linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)` }}>
-              <img src={getImg('b.JPG')} style={{ width: "100%", height: "100%", borderRadius: "50%", border: "2px solid white", objectFit: "cover" }} />
-            </div>
-            <div style={{ flex: 1, marginLeft: 20 }}>
-              <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 8 }}>석민규 & 김하민</div>
-              <div style={{ display: "flex", gap: 16, fontSize: 13, textAlign: "center", color: P.black }}>
-                <div><span style={{ fontWeight: 600 }}>26</span><br/>년</div>
-                <div><span style={{ fontWeight: 600 }}>06</span><br/>월</div>
-                <div><span style={{ fontWeight: 600 }}>27</span><br/>일</div>
-              </div>
+          {/* ✅ 날짜 및 장소 상단 눈에 띄게 강조 디자인 */}
+          <div style={{ padding: "40px 16px", background: P.white, textAlign: "center", borderBottom: `1px solid ${P.border}` }}>
+            <div style={{ fontSize: 32, fontWeight: 700, color: P.black, marginBottom: 8, letterSpacing: "1px", fontFamily: "'Playfair Display', serif" }}>2026. 06. 27</div>
+            <div style={{ fontSize: 18, fontWeight: 600, color: P.black, marginBottom: 16 }}>더누벨 포항 1층 13:00 PM</div>
+            <div style={{ fontSize: 14, lineHeight: 1.6, color: P.gray }}>
+              서로 다른 길을 걸어온 두 사람이 하나 되는 날,<br/>
+              축복해 주시면 감사하겠습니다.
             </div>
           </div>
-          <div style={{ padding: "12px 16px", background: P.white, fontSize: 13, lineHeight: 1.5, color: P.black, borderBottom: `1px solid ${P.border}` }}>
-            💍 더누벨 포항 13:00 PM<br/>
-            서로 다른 길을 걸어온 두 사람이 하나 되는 날,<br/>
-            축복해 주시면 감사하겠습니다.
+
+          <div style={{ display: "flex", alignItems: "center", padding: "16px", background: P.white, borderBottom: `1px solid ${P.border}` }}>
+            <div style={{ width: 64, height: 64, borderRadius: "50%", padding: 3, background: `linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)` }}>
+              <img src={getImg('b.JPG')} style={{ width: "100%", height: "100%", borderRadius: "50%", border: "2px solid white", objectFit: "cover" }} />
+            </div>
+            <div style={{ flex: 1, marginLeft: 16 }}>
+              <div style={{ fontSize: 16, fontWeight: 600, color: P.black }}>석민규 & 김하민</div>
+              <div style={{ fontSize: 13, color: P.gray, marginTop: 4 }}>저희 결혼합니다! 💍</div>
+            </div>
           </div>
 
           <div style={{ display: "flex", gap: 16, padding: "16px", overflowX: "auto", background: P.white, borderBottom: `1px solid ${P.border}` }}>
@@ -464,17 +450,16 @@
             </div>
 
             <div style={{ padding: "12px 16px" }}>
-              <div style={{ display: "flex", gap: 14, fontSize: 24, marginBottom: 10, color: P.black }}>
+              <div style={{ display: "flex", gap: 14, fontSize: 24, marginBottom: 12, color: P.black }}>
                 <span onClick={handleLikeAction} style={{ cursor: "pointer", color: mainLiked ? P.pink : "inherit" }}>
                   {mainLiked ? "❤️" : "♡"}
                 </span> 💬 ↗️
               </div>
-              <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6, color: P.black }}>
-                좋아요 무지하게 <span style={{ color: P.gray, marginLeft: 10, fontWeight: 400 }}>D-{dDayDiff}</span>
+              {/* ✅ D-Day 눈에 띄게 강조 */}
+              <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 8, color: P.black, display: "flex", alignItems: "center" }}>
+                좋아요 무지하게 <span style={{ color: P.pink, fontSize: 18, fontWeight: 800, marginLeft: 8 }}>D-{dDayDiff}</span>
               </div>
               <div style={{ fontSize: 13, lineHeight: 1.5, color: P.black }}>
-                <span style={{ fontWeight: 600 }}>wedding_day</span> 저희 결혼합니다! 🎉<br/>
-                <br/>
                 가장 나다운 모습으로 사랑할 수 있는 사람을 만났습니다.<br/>
                 저희의 새로운 시작을 함께 축복해 주세요! 💖
               </div>
@@ -483,34 +468,20 @@
 
           <div style={{ padding: "16px", display: "flex", flexDirection: "column", gap: 10 }}>
             
+            {/* ✅ 우리에 대해서 (텍스트 제거, 체크무늬 배경, 둥근 테두리 적용) */}
             <div style={{ background: P.white, border: `1px solid ${P.border}`, borderRadius: 8, overflow: "hidden" }}>
               <div onClick={() => toggleExpand('parents')} style={{ padding: "16px", fontSize: 14, fontWeight: 600, display: "flex", justifyContent: "space-between", cursor: "pointer", color: P.black }}>
-                👨‍👩‍👧‍👦 혼주 안내 <span>{expanded['parents'] ? '▲' : '▼'}</span>
+                👨‍👩‍👧‍👦 우리에 대해서 <span>{expanded['parents'] ? '▲' : '▼'}</span>
               </div>
               {expanded['parents'] && (
-                <div style={{ padding: "20px", background: "#F0F0F0" }}> 
-                  <div style={{ background: P.white, borderRadius: 12, padding: "20px", marginBottom: 20, boxShadow: "0 2px 8px rgba(0,0,0,0.05)", textAlign: "center" }}>
-                    <img src={getImg('c.jpg')} style={{ width: "100%", aspectRatio: "1", objectFit: "cover", borderRadius: 12, marginBottom: 16 }} />
-                    <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 20, color: "#333" }}>신랑 석민규</div>
-                    <div style={{ fontSize: 13, color: P.black, lineHeight: 1.6 }}>
-                      석윤식 · 한은향의 아들<br/>
-                      1995년 8월 대구 출생<br/>
-                      조용한 포항 선생님
-                    </div>
-                  </div>
-                  <div style={{ background: P.white, borderRadius: 12, padding: "20px", boxShadow: "0 2px 8px rgba(0,0,0,0.05)", textAlign: "center" }}>
-                    <img src={getImg('d.jpg')} style={{ width: "100%", aspectRatio: "1", objectFit: "cover", borderRadius: 12, marginBottom: 16 }} />
-                    <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 20, color: "#333" }}>신부 김하민</div>
-                    <div style={{ fontSize: 13, color: P.black, lineHeight: 1.6 }}>
-                      김진수 · 최현욱의 딸<br/>
-                      2000년 7월 포항 출생<br/>
-                      감성 과다 영덕 선생님
-                    </div>
-                  </div>
+                <div style={{ padding: "20px 16px", background: "#FFFFFF", display: "flex", flexDirection: "column", gap: 20 }}> 
+                  <img src={getImg('c.jpg')} style={{ width: "100%", borderRadius: 16, display: "block" }} alt="신랑 소개" />
+                  <img src={getImg('d.jpg')} style={{ width: "100%", borderRadius: 16, display: "block" }} alt="신부 소개" />
                 </div>
               )}
             </div>
 
+            {/* ✅ 완벽하게 수정된 사진첩 (Padding 100% 기법으로 iOS/안드로이드 모두 1:1 오류 없음) */}
             <div style={{ background: P.white, border: `1px solid ${P.border}`, borderRadius: 8, overflow: "hidden" }}>
               <div onClick={() => toggleExpand('gallery')} style={{ padding: "16px", fontSize: 14, fontWeight: 600, display: "flex", justifyContent: "space-between", cursor: "pointer", color: P.black }}>
                 📸 사진첩 보기 ({GALLERY_IMAGES.length}장) <span>{expanded['gallery'] ? '▲' : '▼'}</span>
@@ -518,7 +489,9 @@
               {expanded['gallery'] && (
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 2, padding: "0 2px 2px" }}>
                   {GALLERY_IMAGES.map((src, i) => (
-                    <div key={i} onClick={() => setLightboxIndex(i)} className="gallery-thumb" style={{ backgroundImage: `url(${src})` }} />
+                    <div key={i} onClick={() => setLightboxIndex(i)} style={{ position: "relative", width: "100%", paddingBottom: "100%", overflow: "hidden", cursor: "pointer" }}>
+                      <img src={src} style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+                    </div>
                   ))}
                 </div>
               )}
