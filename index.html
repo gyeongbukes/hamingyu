@@ -53,23 +53,23 @@
 
     const DB_URL = "https://sungjang2025-30160-default-rtdb.asia-southeast1.firebasedatabase.app";
     
-    const getImg = (name, ext = 'jpg') => {
+    // ✅ 대소문자 오류 원천 차단: 입력한 파일명(확장자 포함)을 그대로 URL로 만듦
+    const getImg = (exactFileName) => {
       const bucket = "sungjang2025-30160.firebasestorage.app";
-      const finalName = name.includes('.') ? name : `${name}.${ext}`;
-      const path = encodeURIComponent(`개인/${finalName}`);
+      const path = encodeURIComponent(`개인/${exactFileName}`);
       return `https://firebasestorage.googleapis.com/v0/b/${bucket}/o/${path}?alt=media`;
     };
 
     const AUDIO_SRC = "https://firebasestorage.googleapis.com/v0/b/sungjang2025-30160.firebasestorage.app/o/%EA%B0%9C%EC%9D%B8%2Fantifreez.mp3?alt=media";
 
-    // ✅ 사용자가 보내준 파일 목록 대소문자 완벽 반영
+    // ✅ 사용자가 올려주신 폴더 목록 100% 일치 (1~30, 16번은 프로필이므로 제외)
     const PHOTO_LIST = [
       "1.jpg", "2.JPG", "3.JPG", "4.JPG", "5.jpg", 
       "6.jpg", "7.JPG", "8.JPG", "9.JPG", "10.jpg",
       "11.jpg", "12.jpg", "13.JPG", "14.JPG", "15.JPG",
-      "16.jpg", "17.jpg", "18.JPG", "19.JPG", "20.JPG",
-      "21.jpg", "22.jpg", "23.JPG", "24.JPG", "25.JPG",
-      "26.JPG", "27.JPG", "28.JPG", "29.JPG", "30.JPG"
+      "17.jpg", "18.JPG", "19.JPG", "20.JPG", "21.jpg",
+      "22.jpg", "23.JPG", "24.JPG", "25.JPG", "26.JPG",
+      "27.JPG", "28.JPG", "29.JPG", "30.JPG"
     ];
 
     const GALLERY_IMAGES = PHOTO_LIST.map(name => getImg(name));
@@ -279,11 +279,12 @@
       );
     }
 
+    /* ✅ 우리의 취미 모달: a.jpg 표시 반영 */
     function HobbyModal({ onClose }) {
       return (
         <StoryModal title="🏕️ 우리의 취미" onClose={onClose}>
           <div style={{ textAlign: "center" }}>
-            <div style={{ fontSize: 60, marginBottom: 16 }}>🏃🏻‍♂️🍽️🛫</div>
+            <img src={getImg('a.jpg')} style={{ width: "100%", borderRadius: 8, marginBottom: 16, objectFit: "cover" }} alt="우리의 취미" />
             <p style={{ fontSize: 14, lineHeight: 1.6, color: P.black }}>
               저희는 맛있는 음식을 함께 먹고,<br/>
               새로운 곳으로 여행을 떠나는 것을 좋아합니다.<br/>
@@ -381,17 +382,18 @@
       if (!entered) {
         return (
           <div onClick={enter} style={{ position: "fixed", inset: 0, background: "#000", display: "flex", justifyContent: "center", alignItems: "center", cursor: "pointer", zIndex: 10000 }}>
-            {/* ✅ 스플래시 이미지 확장자 .JPG 로 명시 */}
-            <img src={getImg('b.JPG')} style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.5, filter: "blur(5px)" }} />
+            {/* ✅ 스플래시 이미지 다시 0.jpg (블러 효과 제거) */}
+            <img src={getImg('0.jpg')} style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.7 }} />
             <div style={{ position: "absolute", color: P.white, textAlign: "center" }}>
               <div style={{ fontSize: 14, letterSpacing: "2px", marginBottom: 15 }}>M & H WEDDING</div>
-              <div style={{ padding: "12px 28px", border: "1px solid white", borderRadius: 30, fontSize: 12, background: "rgba(255,255,255,0.1)" }}>터치해서 초대장 열기</div>
+              <div style={{ padding: "12px 28px", border: "1px solid white", borderRadius: 30, fontSize: 12, background: "rgba(0,0,0,0.4)" }}>터치해서 초대장 열기</div>
             </div>
           </div>
         );
       }
 
-      const mainPhotoSrc = getImg('00');
+      // 메인 사진은 00.jpg
+      const mainPhotoSrc = getImg('00.jpg');
 
       return (
         <div style={{ maxWidth: 480, margin: "0 auto", minHeight: "100vh", position: "relative", paddingBottom: 60, background: P.bg }}>
@@ -401,7 +403,6 @@
 
           <div style={{ display: "flex", alignItems: "center", padding: "20px 16px", background: P.white, borderBottom: `1px solid ${P.border}` }}>
             <div style={{ width: 76, height: 76, borderRadius: "50%", padding: 3, background: `linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)` }}>
-              {/* ✅ 프로필 사진 확장자 .JPG 로 명시 */}
               <img src={getImg('b.JPG')} style={{ width: "100%", height: "100%", borderRadius: "50%", border: "2px solid white", objectFit: "cover" }} />
             </div>
             <div style={{ flex: 1, marginLeft: 20 }}>
@@ -430,7 +431,6 @@
 
           <div style={{ background: P.white, marginTop: 10, borderTop: `1px solid ${P.border}` }}>
             <div style={{ padding: "12px 16px", display: "flex", alignItems: "center", gap: 10 }}>
-              {/* ✅ 피드 썸네일 프로필 사진 확장자 .JPG 로 명시 */}
               <div style={{ width: 30, height: 30, borderRadius: "50%", background: `url(${getImg('b.JPG')}) center/cover` }}/>
               <span style={{ fontSize: 13, fontWeight: 600, color: P.black }}>wedding_day</span>
             </div>
@@ -461,6 +461,7 @@
 
           <div style={{ padding: "16px", display: "flex", flexDirection: "column", gap: 10 }}>
             
+            {/* ✅ 혼주 안내 정보 업데이트 */}
             <div style={{ background: P.white, border: `1px solid ${P.border}`, borderRadius: 8, overflow: "hidden" }}>
               <div onClick={() => toggleExpand('parents')} style={{ padding: "16px", fontSize: 14, fontWeight: 600, display: "flex", justifyContent: "space-between", cursor: "pointer", color: P.black }}>
                 👨‍👩‍👧‍👦 혼주 안내 <span>{expanded['parents'] ? '▲' : '▼'}</span>
@@ -468,21 +469,21 @@
               {expanded['parents'] && (
                 <div style={{ padding: "20px", background: "#F0F0F0" }}> 
                   <div style={{ background: P.white, borderRadius: 12, padding: "20px", marginBottom: 20, boxShadow: "0 2px 8px rgba(0,0,0,0.05)", textAlign: "center" }}>
-                    <img src={getImg('c')} style={{ width: "100%", aspectRatio: "1", objectFit: "cover", borderRadius: 12, marginBottom: 16 }} />
+                    <img src={getImg('c.jpg')} style={{ width: "100%", aspectRatio: "1", objectFit: "cover", borderRadius: 12, marginBottom: 16 }} />
                     <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 20, color: "#333" }}>신랑 석민규</div>
                     <div style={{ fontSize: 13, color: P.black, lineHeight: 1.6 }}>
                       석윤식 · 한은향의 아들<br/>
-                      1991년 4월 서울 출생<br/>
-                      호기심 많은 손재주 왕 📸
+                      1995년 8월 대구 출생<br/>
+                      조용한 포항 선생님
                     </div>
                   </div>
                   <div style={{ background: P.white, borderRadius: 12, padding: "20px", boxShadow: "0 2px 8px rgba(0,0,0,0.05)", textAlign: "center" }}>
-                    <img src={getImg('d')} style={{ width: "100%", aspectRatio: "1", objectFit: "cover", borderRadius: 12, marginBottom: 16 }} />
+                    <img src={getImg('d.jpg')} style={{ width: "100%", aspectRatio: "1", objectFit: "cover", borderRadius: 12, marginBottom: 16 }} />
                     <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 20, color: "#333" }}>신부 김하민</div>
                     <div style={{ fontSize: 13, color: P.black, lineHeight: 1.6 }}>
                       김진수 · 최현욱의 딸<br/>
-                      1995년 7월 제주 출생<br/>
-                      감성 과다 제주소녀 🍊
+                      2000년 7월 포항 출생<br/>
+                      감성 과다 영덕 선생님
                     </div>
                   </div>
                 </div>
@@ -510,7 +511,7 @@
                 <div style={{ padding: "16px", borderTop: `1px solid ${P.bg}`, fontSize: 13, textAlign: "center", background: P.white }}>
                   <p style={{ fontWeight: 600, fontSize: 15, margin: "0 0 5px", color: P.black }}>더누벨 포항</p>
                   <p style={{ margin: "0 0 16px", color: P.gray }}>경북 포항시 남구 새천년대로 483</p>
-                  <img src={getImg('지도')} alt="지도" style={{ width: "100%", height: "auto", borderRadius: 8, marginBottom: 16, border: `1px solid ${P.border}` }} />
+                  <img src={getImg('지도.jpg')} alt="지도" style={{ width: "100%", height: "auto", borderRadius: 8, marginBottom: 16, border: `1px solid ${P.border}` }} />
                 </div>
               )}
             </div>
@@ -570,7 +571,6 @@
             </div>
 
             <div style={{ display: "flex", gap: 10, alignItems: "center", background: P.bg, padding: "8px 14px", borderRadius: 30, border: `1px solid ${P.border}` }}>
-              {/* ✅ 입력창 프로필 사진 확장자 .JPG 로 명시 */}
               <div style={{ width: 24, height: 24, borderRadius: "50%", background: `url(${getImg('b.JPG')}) center/cover` }}/>
               <input value={guestName} onChange={e => setGuestName(e.target.value)} placeholder="이름" style={{ width: "50px", border: "none", background: "transparent", fontSize: 13, outline: "none", borderRight: `1px solid ${P.lightGray}`, color: P.black, paddingRight: 5 }} />
               <input value={guestMsg} onChange={e => setGuestMsg(e.target.value)} placeholder="축하 메시지 달기..." style={{ flex: 1, border: "none", background: "transparent", fontSize: 13, outline: "none", color: P.black, paddingLeft: 5 }} />
