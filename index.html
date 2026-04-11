@@ -82,9 +82,9 @@
 
     const HOBBY_SLIDES = [
       { img: "a.jpg", caption: "자다가 한 컷 찰칵!" },
-      { img: "aa.jpg", caption: "장보다가 한 컷 찰칵" },
-      { img: "aaa.jpg", caption: "김 먹다가 한 컷 찰칵!" },
-      { img: "aaaa.jpg", caption: "등산하다 한 컷 찰칵" }
+      { img: "aa.jpg", caption: "" },
+      { img: "aaa.jpg", caption: "" },
+      { img: "aaaa.jpg", caption: "" }
     ];
 
     function FadeIn({ children, delay = 0, duration = 1 }) {
@@ -308,9 +308,7 @@
               <div key={i} onClick={() => setSlideIndex(i)} style={{ width: 8, height: 8, borderRadius: "50%", background: i === slideIndex ? P.black : P.lightGray, cursor: "pointer", transition: "background 0.2s" }} />
             ))}
           </div>
-          {HOBBY_SLIDES[slideIndex].caption && (
-            <p style={{ fontSize: 14, lineHeight: 1.6, color: P.black, marginTop: 12 }}>{HOBBY_SLIDES[slideIndex].caption}</p>
-          )}
+          <p style={{ fontSize: 14, lineHeight: 1.6, color: P.black, marginTop: 12, minHeight: 22 }}>{HOBBY_SLIDES[slideIndex].caption || "\u00A0"}</p>
         </StoryModal>
       );
     }
@@ -501,13 +499,14 @@
           </FadeIn>
 
           <FadeIn delay={0.2}>
-            <div style={{ display: "flex", gap: 16, padding: "16px", overflowX: "auto", background: P.white, borderBottom: `1px solid ${P.border}` }}>
+            <div style={{ display: "flex", gap: 16, padding: "16px", overflowX: "auto", background: P.white, borderBottom: `1px solid ${P.border}`, position: "relative" }}>
               {[ { id: 'poll', icon: '📊', label: '하객 투표' }, { id: 'quiz', icon: '💯', label: '모의고사' }, { id: 'hobby', icon: '📸', label: '우리의 일상' }, { id: 'vid1', icon: '💑', label: '서로를\n소개해요' }, { id: 'vid2', icon: '💒', label: '결혼식을\n홍보해요' }, { id: 'vid3', icon: '👋', label: '하객분들께\n인사해요' } ].map(item => (
                 <div key={item.id} onClick={() => setModal(item.id)} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, cursor: "pointer", flexShrink: 0 }}>
                   <div style={{ width: 60, height: 60, borderRadius: "50%", border: `1px solid ${P.lightGray}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, background: P.bg }}>{item.icon}</div>
                   <div style={{ fontSize: 11, color: P.black, whiteSpace: "pre-line", textAlign: "center", lineHeight: 1.3 }}>{item.label}</div>
                 </div>
               ))}
+              <div style={{ position: "sticky", right: 0, top: 0, flexShrink: 0, width: 30, marginLeft: -30, background: "linear-gradient(to right, transparent, white)", pointerEvents: "none" }} />
             </div>
           </FadeIn>
 
@@ -591,7 +590,7 @@
                   <div style={{ padding: "16px", borderTop: `1px solid ${P.bg}`, fontSize: 13, textAlign: "center", background: P.white }}>
                     <p style={{ fontWeight: 600, fontSize: 15, margin: "0 0 5px", color: P.black }}>더누벨 웨딩컨벤션</p>
                     <p style={{ margin: "0 0 16px", color: P.gray }}>경북 포항시 남구 새천년대로 483</p>
-                    <img src={getImg('지도.jpg')} alt="지도" style={{ width: "100%", height: "auto", borderRadius: 8, marginBottom: 16, border: `1px solid ${P.border}` }} />
+                    <img src={getImg('지도.png')} alt="지도" style={{ width: "100%", height: "auto", borderRadius: 8, marginBottom: 16, border: `1px solid ${P.border}` }} />
                   </div>
                 )}
               </div>
@@ -670,14 +669,14 @@
                 {entries.length === 0 && <div style={{ fontSize: 13, color: P.gray, textAlign: "center", padding: "30px 0" }}>첫 번째 축하 댓글을 남겨주세요!</div>}
               </div>
 
-              <div style={{ background: P.bg, padding: "16px", borderRadius: 12, border: `1px solid ${P.border}` }}>
+              <div style={{ background: P.bg, padding: "16px", borderRadius: 12, border: `1px solid ${P.border}`, boxSizing: "border-box" }}>
                 <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
-                  <input value={guestName} onChange={e => setGuestName(e.target.value)} placeholder="이름" style={{ flex: 1, padding: "10px", borderRadius: 6, border: `1px solid ${P.lightGray}`, fontSize: 13, outline: "none", color: P.black }} />
-                  <input type="password" value={guestPw} onChange={e => setGuestPw(e.target.value)} placeholder="비밀번호" style={{ flex: 1, padding: "10px", borderRadius: 6, border: `1px solid ${P.lightGray}`, fontSize: 13, outline: "none", color: P.black }} />
+                  <input value={guestName} onChange={e => setGuestName(e.target.value)} placeholder="이름" style={{ flex: 1, minWidth: 0, padding: "10px", borderRadius: 6, border: `1px solid ${P.lightGray}`, fontSize: 13, outline: "none", color: P.black, boxSizing: "border-box" }} />
+                  <input type="password" value={guestPw} onChange={e => setGuestPw(e.target.value)} placeholder="비밀번호" style={{ flex: 1, minWidth: 0, padding: "10px", borderRadius: 6, border: `1px solid ${P.lightGray}`, fontSize: 13, outline: "none", color: P.black, boxSizing: "border-box" }} />
                 </div>
                 <div style={{ display: "flex", gap: 8 }}>
-                  <input value={guestMsg} onChange={e => setGuestMsg(e.target.value)} placeholder="축하 메시지 남기기..." style={{ flex: 1, padding: "10px", borderRadius: 6, border: `1px solid ${P.lightGray}`, fontSize: 13, outline: "none", color: P.black }} />
-                  <button onClick={submitGuestbook} style={{ padding: "0 20px", background: P.blue, color: P.white, border: "none", borderRadius: 6, fontWeight: 600, fontSize: 13, cursor: "pointer" }}>게시</button>
+                  <input value={guestMsg} onChange={e => setGuestMsg(e.target.value)} placeholder="축하 메시지 남기기..." style={{ flex: 1, minWidth: 0, padding: "10px", borderRadius: 6, border: `1px solid ${P.lightGray}`, fontSize: 13, outline: "none", color: P.black, boxSizing: "border-box" }} />
+                  <button onClick={submitGuestbook} style={{ padding: "0 20px", background: P.blue, color: P.white, border: "none", borderRadius: 6, fontWeight: 600, fontSize: 13, cursor: "pointer", flexShrink: 0 }}>게시</button>
                 </div>
               </div>
             </div>
