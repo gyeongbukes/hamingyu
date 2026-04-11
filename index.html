@@ -81,10 +81,10 @@
     const P = { bg: "#FAFAFA", white: "#FFFFFF", black: "#262626", gray: "#8E8E8E", lightGray: "#DBDBDB", blue: "#0095F6", pink: "#ED4956", border: "#EFEFEF" };
 
     const HOBBY_SLIDES = [
-      { img: "a.jpg", caption: "자다가 한 컷 찰칵!" },
-      { img: "aa.jpg", caption: "" },
-      { img: "aaa.jpg", caption: "" },
-      { img: "aaaa.jpg", caption: "" }
+      { img: "a.jpg", caption: "쇼츠중독자 신부\n쇼츠 보다가 기절" },
+      { img: "aa.jpg", caption: "장보기의 달인,\n예사롭지 않은 폼" },
+      { img: "aaa.jpg", caption: "거울이 있으면\n일단 눌러보는 신부" },
+      { img: "aaaa.jpg", caption: "이에 묻은 김 조차도\n웃긴 신랑과 신부" }
     ];
 
     function FadeIn({ children, delay = 0, duration = 1 }) {
@@ -308,7 +308,7 @@
               <div key={i} onClick={() => setSlideIndex(i)} style={{ width: 8, height: 8, borderRadius: "50%", background: i === slideIndex ? P.black : P.lightGray, cursor: "pointer", transition: "background 0.2s" }} />
             ))}
           </div>
-          <p style={{ fontSize: 14, lineHeight: 1.6, color: P.black, marginTop: 12, minHeight: 22 }}>{HOBBY_SLIDES[slideIndex].caption || "\u00A0"}</p>
+          <p style={{ fontSize: 14, lineHeight: 1.6, color: P.black, marginTop: 12, minHeight: 22, whiteSpace: "pre-line" }}>{HOBBY_SLIDES[slideIndex].caption || "\u00A0"}</p>
         </StoryModal>
       );
     }
@@ -590,7 +590,7 @@
                   <div style={{ padding: "16px", borderTop: `1px solid ${P.bg}`, fontSize: 13, textAlign: "center", background: P.white }}>
                     <p style={{ fontWeight: 600, fontSize: 15, margin: "0 0 5px", color: P.black }}>더누벨 웨딩컨벤션</p>
                     <p style={{ margin: "0 0 16px", color: P.gray }}>경북 포항시 남구 새천년대로 483</p>
-                    <img src={getImg('지도.png')} alt="지도" style={{ width: "100%", height: "auto", borderRadius: 8, marginBottom: 16, border: `1px solid ${P.border}` }} />
+                    <img src={getImg('지도.jpg')} alt="지도" style={{ width: "100%", height: "auto", borderRadius: 8, marginBottom: 16, border: `1px solid ${P.border}` }} />
                   </div>
                 )}
               </div>
@@ -603,14 +603,28 @@
                 </div>
                 {expanded['account'] && (
                   <div style={{ padding: "16px", borderTop: `1px solid ${P.bg}`, fontSize: 13, background: P.white }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10, paddingBottom: 10, borderBottom: `1px solid ${P.border}` }}>
-                      <div style={{color: P.black}}><span style={{ color: P.gray, marginRight: 8 }}>신랑 측</span> 00은행 123-456-789</div>
-                      <button onClick={()=>alert("복사되었습니다")} style={{ border: "none", background: P.bg, borderRadius: 4, padding: "5px 10px", fontSize: 11, cursor: "pointer", color: P.black }}>복사</button>
-                    </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <div style={{color: P.black}}><span style={{ color: P.gray, marginRight: 8 }}>신부 측</span> 00은행 987-654-321</div>
-                      <button onClick={()=>alert("복사되었습니다")} style={{ border: "none", background: P.bg, borderRadius: 4, padding: "5px 10px", fontSize: 11, cursor: "pointer", color: P.black }}>복사</button>
-                    </div>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: P.black, marginBottom: 10 }}>신랑 측</p>
+                    {[
+                      { label: "신랑", bank: "농협", num: "352-1426-12633-3", name: "석민규" },
+                      { label: "아버지", bank: "신한은행", num: "110-517-373999", name: "석윤식" },
+                      { label: "어머니", bank: "새마을금고", num: "9003-2026-97960", name: "한은향" }
+                    ].map((acc, i) => (
+                      <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8, paddingBottom: 8, borderBottom: `1px solid ${P.border}` }}>
+                        <div style={{ color: P.black }}><span style={{ color: P.gray, marginRight: 6 }}>{acc.label}</span>{acc.bank} {acc.num}<br/><span style={{ fontSize: 12, color: P.gray }}>{acc.name}</span></div>
+                        <button onClick={() => { navigator.clipboard.writeText(acc.num).then(() => alert("계좌번호가 복사되었습니다")).catch(() => alert(acc.num)); }} style={{ border: "none", background: P.bg, borderRadius: 4, padding: "5px 10px", fontSize: 11, cursor: "pointer", color: P.black, flexShrink: 0 }}>복사</button>
+                      </div>
+                    ))}
+                    <p style={{ fontSize: 13, fontWeight: 600, color: P.black, marginTop: 16, marginBottom: 10 }}>신부 측</p>
+                    {[
+                      { label: "신부", bank: "농협", num: "302-1775-8428-11", name: "김하민" },
+                      { label: "아버지", bank: "아이엠뱅크", num: "019-13-076104", name: "김진수" },
+                      { label: "어머니", bank: "농협", num: "743-02-247526", name: "최현욱" }
+                    ].map((acc, i) => (
+                      <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: i < 2 ? 8 : 0, paddingBottom: i < 2 ? 8 : 0, borderBottom: i < 2 ? `1px solid ${P.border}` : "none" }}>
+                        <div style={{ color: P.black }}><span style={{ color: P.gray, marginRight: 6 }}>{acc.label}</span>{acc.bank} {acc.num}<br/><span style={{ fontSize: 12, color: P.gray }}>{acc.name}</span></div>
+                        <button onClick={() => { navigator.clipboard.writeText(acc.num).then(() => alert("계좌번호가 복사되었습니다")).catch(() => alert(acc.num)); }} style={{ border: "none", background: P.bg, borderRadius: 4, padding: "5px 10px", fontSize: 11, cursor: "pointer", color: P.black, flexShrink: 0 }}>복사</button>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
