@@ -80,6 +80,13 @@
     const WEDDING_DATE = new Date("2026-06-27T13:00:00");
     const P = { bg: "#FAFAFA", white: "#FFFFFF", black: "#262626", gray: "#8E8E8E", lightGray: "#DBDBDB", blue: "#0095F6", pink: "#ED4956", border: "#EFEFEF" };
 
+    const HOBBY_SLIDES = [
+      { img: "a.jpg", caption: "자다가 한 컷 찰칵!" },
+      { img: "aa.jpg", caption: "" },
+      { img: "aaa.jpg", caption: "" },
+      { img: "aaaa.jpg", caption: "" }
+    ];
+
     function FadeIn({ children, delay = 0, duration = 1 }) {
       const domRef = useRef();
       const [isVisible, setVisible] = useState(false);
@@ -272,18 +279,38 @@
     }
 
     function HobbyModal({ onClose }) {
+      const [slideIndex, setSlideIndex] = useState(0);
+      const touchStartX = useRef(null);
+
+      const handleTouchStart = (e) => { touchStartX.current = e.touches[0].clientX; };
+      const handleTouchEnd = (e) => {
+        if (touchStartX.current === null) return;
+        const diff = touchStartX.current - e.changedTouches[0].clientX;
+        if (diff > 50 && slideIndex < HOBBY_SLIDES.length - 1) setSlideIndex(slideIndex + 1);
+        if (diff < -50 && slideIndex > 0) setSlideIndex(slideIndex - 1);
+        touchStartX.current = null;
+      };
+
       return (
-        <StoryModal title="🛋️ 우리의 취미" onClose={onClose}>
-          <div style={{ textAlign: "center" }}>
-            <img src={getImg('a.jpg')} style={{ width: "100%", borderRadius: 8, marginBottom: 16, objectFit: "cover" }} alt="우리의 취미" />
-            <div style={{ fontSize: 40, marginBottom: 16 }}>🍽️🛋️💬</div>
-            <p style={{ fontSize: 14, lineHeight: 1.6, color: P.black }}>
-              저희는 맛있는 음식을 함께 먹고,<br/>
-              누워 서로의 이야기를 듣는 것을 좋아합니다.<br/>
-              앞으로도 서로의 가장 친구이자 배우자가 되어<br/>
-              행복하게 살겠습니다!
-            </p>
+        <StoryModal title="📸 우리의 일상" onClose={onClose}>
+          <div style={{ position: "relative", overflow: "hidden", borderRadius: 8 }}
+               onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+            <div style={{ display: "flex", transition: "transform 0.3s ease", transform: `translateX(-${slideIndex * 100}%)` }}>
+              {HOBBY_SLIDES.map((slide, i) => (
+                <img key={i} src={getImg(slide.img)} style={{ width: "100%", flexShrink: 0, objectFit: "cover", aspectRatio: "1" }} alt={`일상 ${i+1}`} />
+              ))}
+            </div>
+            {slideIndex > 0 && <div onClick={() => setSlideIndex(slideIndex - 1)} style={{ position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)", background: "rgba(0,0,0,0.4)", color: "white", width: 32, height: 32, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 18 }}>‹</div>}
+            {slideIndex < HOBBY_SLIDES.length - 1 && <div onClick={() => setSlideIndex(slideIndex + 1)} style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "rgba(0,0,0,0.4)", color: "white", width: 32, height: 32, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 18 }}>›</div>}
           </div>
+          <div style={{ display: "flex", justifyContent: "center", gap: 6, marginTop: 12 }}>
+            {HOBBY_SLIDES.map((_, i) => (
+              <div key={i} onClick={() => setSlideIndex(i)} style={{ width: 8, height: 8, borderRadius: "50%", background: i === slideIndex ? P.black : P.lightGray, cursor: "pointer", transition: "background 0.2s" }} />
+            ))}
+          </div>
+          {HOBBY_SLIDES[slideIndex].caption && (
+            <p style={{ fontSize: 14, lineHeight: 1.6, color: P.black, marginTop: 12 }}>{HOBBY_SLIDES[slideIndex].caption}</p>
+          )}
         </StoryModal>
       );
     }
@@ -305,14 +332,13 @@
         poll2: { title: "두 사람의 2세는 누구를 닮을까요?", opts: ["아빠 닮은 딸", "엄마 닮은 아들"], votes: [0, 0], voted: false }
       });
       
-      // 방명록 및 참석 여부 상태 관리
       const [entries, setEntries] = useState([]);
       const [guestName, setGuestName] = useState("");
-      const [guestPw, setGuestPw] = useState(""); // 비밀번호 추가
+      const [guestPw, setGuestPw] = useState("");
       const [guestMsg, setGuestMsg] = useState("");
       
-      const [rsvpName, setRsvpName] = useState(""); // 참석자 이름
-      const [rsvpCompanion, setRsvpCompanion] = useState("0"); // 동행인 수
+      const [rsvpName, setRsvpName] = useState("");
+      const [rsvpCompanion, setRsvpCompanion] = useState("0");
 
       useEffect(() => {
         fetch(`${DB_URL}/polls.json`).then(r => r.json()).then(data => {
@@ -357,7 +383,6 @@
         } catch(e) { return null; }
       };
 
-      // 방명록 등록 (비밀번호 포함)
       const submitGuestbook = async () => {
         if (!guestName.trim() || !guestMsg.trim() || !guestPw.trim()) {
           alert("이름, 비밀번호, 메시지를 모두 입력해주세요.");
@@ -371,7 +396,6 @@
         setGuestName(""); setGuestPw(""); setGuestMsg("");
       };
 
-      // 방명록 삭제 (비밀번호 확인)
       const deleteGuestbook = (id, correctPw) => {
         const inputPw = prompt("등록할 때 입력한 비밀번호를 입력해주세요.");
         if (inputPw === null) return;
@@ -386,7 +410,6 @@
         }
       };
 
-      // 참석 여부(RSVP) 데이터 전송
       const submitRsvp = (status) => {
         if (!rsvpName.trim()) {
           alert("참석자 성함을 입력해주세요.");
@@ -398,7 +421,7 @@
             alert(status === '참석' ? "참석 정보가 성공적으로 전달되었습니다. 감사합니다!" : "따뜻한 마음 감사히 받겠습니다.");
             setRsvpName("");
             setRsvpCompanion("0");
-            toggleExpand('rsvp'); // 폼 닫기
+            toggleExpand('rsvp');
           });
       };
 
@@ -479,10 +502,10 @@
 
           <FadeIn delay={0.2}>
             <div style={{ display: "flex", gap: 16, padding: "16px", overflowX: "auto", background: P.white, borderBottom: `1px solid ${P.border}` }}>
-              {[ { id: 'poll', icon: '📊', label: '하객 투표' }, { id: 'quiz', icon: '💯', label: '모의고사' }, { id: 'hobby', icon: '🛋️', label: '우리의 취미' }, { id: 'youtube', icon: '▶️', label: '식전 영상' } ].map(item => (
+              {[ { id: 'poll', icon: '📊', label: '하객 투표' }, { id: 'quiz', icon: '💯', label: '모의고사' }, { id: 'hobby', icon: '📸', label: '우리의 일상' }, { id: 'vid1', icon: '💑', label: '서로를\n소개해요' }, { id: 'vid2', icon: '💒', label: '결혼식을\n홍보해요' }, { id: 'vid3', icon: '👋', label: '하객분들께\n인사해요' } ].map(item => (
                 <div key={item.id} onClick={() => setModal(item.id)} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, cursor: "pointer", flexShrink: 0 }}>
                   <div style={{ width: 60, height: 60, borderRadius: "50%", border: `1px solid ${P.lightGray}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, background: P.bg }}>{item.icon}</div>
-                  <div style={{ fontSize: 11, color: P.black }}>{item.label}</div>
+                  <div style={{ fontSize: 11, color: P.black, whiteSpace: "pre-line", textAlign: "center", lineHeight: 1.3 }}>{item.label}</div>
                 </div>
               ))}
             </div>
@@ -594,7 +617,6 @@
               </div>
             </FadeIn>
             
-            {/* ✅ 참석 여부(RSVP) 폼으로 기능 업데이트 */}
             <FadeIn delay={0.1}>
               <div style={{ background: P.white, border: `1px solid ${P.border}`, borderRadius: 8, overflow: "hidden" }}>
                 <div onClick={() => toggleExpand('rsvp')} style={{ padding: "16px", fontSize: 14, fontWeight: 600, display: "flex", justifyContent: "space-between", cursor: "pointer", color: P.black }}>
@@ -638,7 +660,6 @@
                         {e.ip && <span style={{ fontSize: 10, color: P.lightGray }}>({e.ip})</span>}
                       </div>
                       <div style={{ fontSize: 13, marginTop: 3, color: P.black, lineHeight: 1.4 }}>{e.msg}</div>
-                      {/* ✅ 방명록 삭제 버튼 추가 */}
                       <div style={{ display: "flex", gap: 12, marginTop: 5 }}>
                         <span style={{ fontSize: 11, color: P.gray }}>{e.date}</span>
                         <span onClick={() => deleteGuestbook(e.id, e.pw)} style={{ fontSize: 11, color: P.gray, cursor: "pointer", textDecoration: "underline" }}>삭제</span>
@@ -649,7 +670,6 @@
                 {entries.length === 0 && <div style={{ fontSize: 13, color: P.gray, textAlign: "center", padding: "30px 0" }}>첫 번째 축하 댓글을 남겨주세요!</div>}
               </div>
 
-              {/* ✅ 방명록 비밀번호 입력칸 추가 및 디자인 정돈 */}
               <div style={{ background: P.bg, padding: "16px", borderRadius: 12, border: `1px solid ${P.border}` }}>
                 <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
                   <input value={guestName} onChange={e => setGuestName(e.target.value)} placeholder="이름" style={{ flex: 1, padding: "10px", borderRadius: 6, border: `1px solid ${P.lightGray}`, fontSize: 13, outline: "none", color: P.black }} />
@@ -694,10 +714,26 @@
           {modal === 'quiz' && <QuizModal onClose={() => setModal(null)} />}
           {modal === 'hobby' && <HobbyModal onClose={() => setModal(null)} />}
 
-          {modal === 'youtube' && (
-            <StoryModal title="▶️ 식전 영상 미리보기" onClose={() => setModal(null)}>
+          {modal === 'vid1' && (
+            <StoryModal title="💑 서로를 소개해요" onClose={() => setModal(null)}>
               <div style={{ width: "100%", aspectRatio: "16/9", background: P.black, borderRadius: 8, overflow: "hidden", border: `1px solid ${P.border}` }}>
-                <iframe width="100%" height="100%" src="https://www.youtube.com/embed/K5YBoEvDBzU" title="YouTube video player" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>
+                <iframe width="100%" height="100%" src="https://www.youtube.com/embed/https://www.youtube.com/watch?v=P0XO10k7tX4" title="서로를 소개해요" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>
+              </div>
+            </StoryModal>
+          )}
+
+          {modal === 'vid2' && (
+            <StoryModal title="💒 결혼식을 홍보해요" onClose={() => setModal(null)}>
+              <div style={{ width: "100%", aspectRatio: "16/9", background: P.black, borderRadius: 8, overflow: "hidden", border: `1px solid ${P.border}` }}>
+                <iframe width="100%" height="100%" src="https://www.youtube.com/embed/https://www.youtube.com/watch?v=KpyZRLyrZcM" title="결혼식을 홍보해요" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>
+              </div>
+            </StoryModal>
+          )}
+
+          {modal === 'vid3' && (
+            <StoryModal title="👋 하객분들께 인사해요" onClose={() => setModal(null)}>
+              <div style={{ width: "100%", aspectRatio: "16/9", background: P.black, borderRadius: 8, overflow: "hidden", border: `1px solid ${P.border}` }}>
+                <iframe width="100%" height="100%" src="https://www.youtube.com/embed/youtube.com/watch?si=hiXB9iXS6ilPUoJ_&v=VW-0ERSQDOo&feature=youtu.be" title="하객분들께 인사해요" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>
               </div>
             </StoryModal>
           )}
