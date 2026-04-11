@@ -511,9 +511,8 @@
                     석민규 & 김하민
                   </div>
                   
-                  {/* 카운트다운 스탯 (전체 간격 미세 조정) */}
-                  {/* justifyContent: "flex-start"와 작은 gap을 사용하여 간격 축소 및 왼쪽으로 모음 */}
-                  <div style={{ display: "flex", justifyContent: "flex-start", textAlign: "center", gap: "14px" }}>
+                  {/* 카운트다운 스탯 (간격 2배 확대: gap 28px) */}
+                  <div style={{ display: "flex", justifyContent: "flex-start", textAlign: "center", gap: "28px" }}>
                     <div style={{ display: "flex", flexDirection: "column", minWidth: "32px" }}>
                       <span style={{ fontWeight: 700, fontSize: 24, color: P.black }}>26</span>
                       <span style={{ fontSize: 11, color: P.gray, marginTop: 4 }}>YEAR</span>
@@ -534,7 +533,7 @@
                 </div>
               </div>
 
-              {/* 하단: 상세 정보 (복구된 깔끔한 양식) */}
+              {/* 하단: 상세 정보 */}
               <div style={{ padding: "0 16px 16px" }}>
                 <div style={{ fontSize: 13, color: P.black, lineHeight: 1.5 }}>
                   💍 2026년 6월 27일 오후 1시<br/>
@@ -544,7 +543,7 @@
               </div>
             </div>
           </FadeIn>
-
+          
           {/* 하이라이트(스토리) 영역 */}
           <FadeIn delay={0.2}>
             <div style={{ position: "relative", background: P.white, borderBottom: `1px solid ${P.border}` }}>
