@@ -12,15 +12,30 @@
   <meta property="og:type" content="website" />
   <meta name="description" content="석민규 & 김하민의 모바일 청첩장입니다. 소중한 분들을 초대합니다." />
 
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+  <!-- ========== [최적화 1] DNS 선제 연결 ========== -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="preconnect" href="https://firebasestorage.googleapis.com" crossorigin>
+  <link rel="preconnect" href="https://sungjang2025-30160-default-rtdb.asia-southeast1.firebasedatabase.app" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="dns-prefetch" href="https://api.ipify.org">
+  <link rel="dns-prefetch" href="https://www.youtube.com">
+
+  <!-- ========== [최적화 2] 첫 진입 이미지 preload ========== -->
+  <link rel="preload" as="image" href="https://firebasestorage.googleapis.com/v0/b/sungjang2025-30160.firebasestorage.app/o/%EA%B0%9C%EC%9D%B8%2F0.jpg?alt=media" fetchpriority="high">
+  <link rel="preload" as="image" href="https://firebasestorage.googleapis.com/v0/b/sungjang2025-30160.firebasestorage.app/o/%EA%B0%9C%EC%9D%B8%2F00.jpg?alt=media">
+
+  <!-- ========== [최적화 3] 폰트 - Pretendard dynamic subset (용량 대폭 감소) ========== -->
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
 
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <!-- ========== [최적화 4] CDN 교체 - unpkg → jsdelivr (한국 빠름) ========== -->
+  <script crossorigin src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
+  <script crossorigin src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.23.9/babel.min.js"></script>
 
   <style>
-    body { margin: 0; padding: 0; background-color: #FAFAFA; -webkit-tap-highlight-color: transparent; color: #262626; overflow-x: hidden; font-family: 'Pretendard', sans-serif; }
+    body { margin: 0; padding: 0; background-color: #FAFAFA; -webkit-tap-highlight-color: transparent; color: #262626; overflow-x: hidden; font-family: 'Pretendard Variable', 'Pretendard', sans-serif; }
     ::-webkit-scrollbar { display: none; }
     .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
     .hide-scroll::-webkit-scrollbar { display: none; }
@@ -58,10 +73,61 @@
       display: flex; flex-direction: column; align-items: center; gap: 8px;
       animation: bounceScroll 2s infinite ease-in-out;
     }
+
+    /* ========== [최적화 5] 초기 로더 - 흰 화면 제거 ========== */
+    @keyframes loaderFadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes loaderPulse {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+    #initial-loader {
+      position: fixed;
+      inset: 0;
+      background: #000;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 99999;
+      animation: loaderFadeIn 0.4s ease;
+      color: white;
+      text-align: center;
+      font-family: 'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    #initial-loader .loader-title {
+      font-size: 14px;
+      letter-spacing: 3px;
+      margin-bottom: 20px;
+      font-weight: 500;
+    }
+    #initial-loader .loader-sub {
+      font-size: 11px;
+      letter-spacing: 1px;
+      opacity: 0.6;
+      animation: loaderPulse 1.6s ease-in-out infinite;
+    }
+    #initial-loader .loader-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: white;
+      margin-top: 24px;
+      animation: loaderPulse 1.2s ease-in-out infinite;
+    }
   </style>
 </head>
 <body>
-  <div id="root"></div>
+  <div id="root">
+    <!-- [최적화 5] React 로드 전 흰 화면 대신 보여질 초기 로더 -->
+    <div id="initial-loader">
+      <div class="loader-title">MINGYU & HAMIN</div>
+      <div class="loader-sub">초대장을 준비하고 있어요</div>
+      <div class="loader-dot"></div>
+    </div>
+  </div>
 
   <script type="text/babel">
     const { useState, useEffect, useRef } = React;
@@ -323,7 +389,7 @@
                onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
             <div style={{ display: "flex", transition: "transform 0.3s ease", transform: `translateX(-${slideIndex * 100}%)` }}>
               {HOBBY_SLIDES.map((slide, i) => (
-                <img key={i} src={getImg(slide.img)} style={{ width: "100%", flexShrink: 0, objectFit: "cover", aspectRatio: "1" }} alt={`일상 ${i+1}`} />
+                <img key={i} src={getImg(slide.img)} loading="lazy" decoding="async" style={{ width: "100%", flexShrink: 0, objectFit: "cover", aspectRatio: "1" }} alt={`일상 ${i+1}`} />
               ))}
             </div>
             {slideIndex > 0 && <div onClick={() => setSlideIndex(slideIndex - 1)} style={{ position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)", background: "rgba(0,0,0,0.4)", color: "white", width: 32, height: 32, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 18 }}>‹</div>}
@@ -473,7 +539,7 @@
       if (!entered) {
         return (
           <div onClick={enter} style={{ position: "fixed", inset: 0, background: "#000", display: "flex", justifyContent: "center", alignItems: "center", cursor: "pointer", zIndex: 10000 }}>
-            <img src={getImg('0.jpg')} style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.7 }} />
+            <img src={getImg('0.jpg')} fetchpriority="high" style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.7 }} />
             <div style={{ position: "absolute", color: P.white, textAlign: "center" }}>
               <div style={{ fontSize: 14, letterSpacing: "2px", marginBottom: 15 }}>민규 & 하민 모바일 청첩장</div>
               <div style={{ padding: "12px 28px", border: "1px solid white", borderRadius: 30, fontSize: 12, background: "rgba(0,0,0,0.4)" }}>터치해서 초대장 열기</div>
@@ -488,7 +554,7 @@
         <div style={{ maxWidth: 480, margin: "0 auto", minHeight: "100vh", position: "relative", paddingBottom: 60, background: P.bg }}>
           
           <button onClick={() => setPlaying(!playing)} style={{ position: "fixed", top: 12, right: 12, zIndex: 900, width: 36, height: 36, borderRadius: "50%", border: `1px solid ${P.lightGray}`, background: "rgba(255,255,255,0.9)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", animation: playing ? "spin 4s linear infinite" : "none", fontSize: 16 }}>♫</button>
-          <audio ref={audioRef} loop preload="auto" src={AUDIO_SRC}></audio>
+          <audio ref={audioRef} loop preload="none" src={AUDIO_SRC}></audio>
 
           <div style={{ minHeight: "100vh", padding: "40px 20px 120px", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", background: P.bg, position: "relative", textAlign: "center", boxSizing: "border-box" }}>
             <FadeIn delay={0.2} duration={1.2}>
@@ -524,7 +590,7 @@
             <div style={{ background: P.white, borderTop: `1px solid ${P.border}` }}>
               <div style={{ display: "flex", alignItems: "center", padding: "20px 16px 12px" }}>
                 <div style={{ width: 88, height: 88, borderRadius: "50%", padding: 3, background: `linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)`, flexShrink: 0 }}>
-                  <img src={getImg('b.JPG')} style={{ width: "100%", height: "100%", borderRadius: "50%", border: "2px solid white", objectFit: "cover" }} />
+                  <img src={getImg('b.JPG')} loading="lazy" decoding="async" style={{ width: "100%", height: "100%", borderRadius: "50%", border: "2px solid white", objectFit: "cover" }} />
                 </div>
                 <div style={{ flex: 1, marginLeft: 20, display: "flex", flexDirection: "column", justifyContent: "center" }}>
                   <div style={{ fontSize: 16, fontWeight: 700, color: P.black, marginBottom: 12, textAlign: "left" }}>
@@ -623,10 +689,10 @@
                 {expanded['parents'] && (
                   <div style={{ padding: "20px", background: "#F0F0F0" }}> 
                     <div style={{ background: P.white, borderRadius: 16, padding: "16px", marginBottom: 20, boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}>
-                      <img src={getImg('c.jpg')} style={{ width: "100%", aspectRatio: "1", objectFit: "cover", borderRadius: 12, display: "block" }} alt="신랑 소개" />
+                      <img src={getImg('c.jpg')} loading="lazy" decoding="async" style={{ width: "100%", aspectRatio: "1", objectFit: "cover", borderRadius: 12, display: "block" }} alt="신랑 소개" />
                     </div>
                     <div style={{ background: P.white, borderRadius: 16, padding: "16px", boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}>
-                      <img src={getImg('d.jpg')} style={{ width: "100%", aspectRatio: "1", objectFit: "cover", borderRadius: 12, display: "block" }} alt="신부 소개" />
+                      <img src={getImg('d.jpg')} loading="lazy" decoding="async" style={{ width: "100%", aspectRatio: "1", objectFit: "cover", borderRadius: 12, display: "block" }} alt="신부 소개" />
                     </div>
                   </div>
                 )}
@@ -641,8 +707,8 @@
                 {expanded['gallery'] && (
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 2, padding: "0 2px 2px" }}>
                     {GALLERY_IMAGES.map((src, i) => (
-                      <div key={i} onClick={() => setLightboxIndex(i)} style={{ position: "relative", width: "100%", paddingBottom: "100%", overflow: "hidden", cursor: "pointer" }}>
-                        <img src={src} style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+                      <div key={i} onClick={() => setLightboxIndex(i)} style={{ position: "relative", width: "100%", paddingBottom: "100%", overflow: "hidden", cursor: "pointer", background: P.bg }}>
+                        <img src={src} loading="lazy" decoding="async" style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", objectFit: "cover" }} />
                       </div>
                     ))}
                   </div>
@@ -659,7 +725,7 @@
                   <div style={{ padding: "16px", borderTop: `1px solid ${P.bg}`, fontSize: 13, textAlign: "center", background: P.white }}>
                     <p style={{ fontWeight: 600, fontSize: 15, margin: "0 0 5px", color: P.black }}>더누벨 웨딩컨벤션</p>
                     <p style={{ margin: "0 0 16px", color: P.gray }}>경북 포항시 남구 새천년대로 483</p>
-                    <img src={getImg('지도.png')} alt="지도" style={{ width: "100%", height: "auto", borderRadius: 8, marginBottom: 16, border: `1px solid ${P.border}` }} />
+                    <img src={getImg('지도.png')} loading="lazy" decoding="async" alt="지도" style={{ width: "100%", height: "auto", borderRadius: 8, marginBottom: 16, border: `1px solid ${P.border}` }} />
                   </div>
                 )}
               </div>
